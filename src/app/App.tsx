@@ -12,6 +12,7 @@ import { SlideExample } from './components/kearney/SlideExample';
 import { DataVisualizationGuide } from './components/kearney/DataVisualizationGuide';
 import { GradientsShowcase } from './components/kearney/GradientsShowcase';
 import { Logo } from './components/kearney/Logo';
+import { MapExample } from './components/kearney/MapExample';
 
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -108,6 +109,7 @@ function AppContent({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleThe
             <TabsTrigger value="dataviz">Data Viz Guide</TabsTrigger>
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="slides">Slides</TabsTrigger>
+            <TabsTrigger value="maps">Maps</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -144,6 +146,10 @@ function AppContent({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleThe
 
           <TabsContent value="slides">
             <SlideExample />
+          </TabsContent>
+
+          <TabsContent value="maps">
+            <MapExample />
           </TabsContent>
         </Tabs>
       </main>

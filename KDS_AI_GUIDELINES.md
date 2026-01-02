@@ -1,7 +1,7 @@
 # Kearney Design System (KDS) - AI Assistant Guidelines
 
-**Version**: 1.0  
-**Last Updated**: January 1, 2026  
+**Version**: 1.1  
+**Last Updated**: January 2, 2026  
 **Status**: Production-ready
 
 > **GitHub Gist**: [View complete component code examples →](https://gist.github.com/YOUR_USERNAME/YOUR_GIST_ID)
@@ -32,6 +32,13 @@ CHARTS:
 - Use annotations for key insights
 - Hide Y-axis values when labels make them clear
 
+MAPS:
+- Use Kearney colors ONLY for all map elements
+- Sequential scale for choropleth: #F5F5F5 → #7823DC
+- Minimal base maps (light gray or white)
+- Always include legend and scale
+- No unnecessary detail (roads, labels unless critical)
+
 ICONS: 
 - Lucide-react ONLY
 - Must be colored with KDS colors (#7823DC, #1E1E1E, etc.)
@@ -39,10 +46,11 @@ ICONS:
 
 FORBIDDEN:
 ❌ Gridlines on any chart
-❌ Non-Kearney colors or gradients
+❌ Non-Kearney colors or gradients (including on maps!)
 ❌ Emoticons
 ❌ Pie charts (except 2-4 segments, sparingly)
 ❌ Gauge charts (only when appropriate)
+❌ Rainbow color scales on maps
 ```
 
 ---
@@ -58,9 +66,10 @@ FORBIDDEN:
 7. [Dashboard Layouts](#dashboard-layouts)
 8. [Slide Layouts](#slide-layouts)
 9. [Theme Configuration](#theme-configuration)
-10. [Common Mistakes & Anti-Patterns](#common-mistakes--anti-patterns)
-11. [Code Examples](#code-examples)
-12. [Decision Trees](#decision-trees)
+10. [Mapping & Geospatial Analytics](#mapping--geospatial-analytics)
+11. [Common Mistakes & Anti-Patterns](#common-mistakes--anti-patterns)
+12. [Code Examples](#code-examples)
+13. [Decision Trees](#decision-trees)
 
 ---
 
@@ -835,6 +844,714 @@ const SLIDE_SPECS = {
 
 ---
 
+## Mapping & Geospatial Analytics
+
+### Core Mapping Principles
+
+Maps and geospatial visualizations in Kearney deliverables must follow KDS brand standards while maintaining geographic accuracy and clarity.
+
+**CRITICAL RULES:**
+1. **Use Kearney Colors Only** - All map elements must use the official KDS palette
+2. **Minimal Base Maps** - Keep base layers subtle to emphasize data overlays
+3. **No Unnecessary Detail** - Remove visual clutter (roads, labels) unless critical to analysis
+4. **Data-First Approach** - Data overlays should be immediately visible and dominant
+5. **Clear Legends** - Always include scale bars, color legends, and units
+6. **Annotations** - Mark key geographic insights with callouts
+7. **Proper Projections** - Use appropriate map projections for the geographic scope
+
+---
+
+### Recommended Mapping Libraries
+
+```typescript
+const APPROVED_MAP_LIBRARIES = {
+  interactive: 'react-leaflet',      // Open source, lightweight, easiest to implement
+  advanced: 'mapbox-gl',             // Premium features, custom styling, best performance
+  simple: 'react-simple-maps',       // Static SVG maps, perfect for slides
+  geospatial: '@deck.gl/react',      // 3D visualization layers, advanced analytics
+};
+```
+
+**Installation:**
+
+```bash
+# Leaflet (recommended for most use cases)
+npm install react-leaflet leaflet
+npm install @types/leaflet --save-dev
+
+# Mapbox GL (advanced interactive maps)
+npm install mapbox-gl react-map-gl
+
+# Simple Maps (slides/static visualizations)
+npm install react-simple-maps
+
+# Deck.gl (3D/advanced geospatial)
+npm install deck.gl @deck.gl/react
+```
+
+---
+
+### Map Configuration Standards
+
+```typescript
+// Base map configuration for light and dark themes
+const KDS_MAP_CONFIG = {
+  light: {
+    style: 'mapbox://styles/mapbox/light-v11',
+    backgroundColor: '#FFFFFF',
+    waterColor: '#E6E6E6',          // Light gray water
+    landColor: '#F5F5F5',           // Off-white land
+    borderColor: '#D2D2D2',         // Gray borders
+    labelColor: '#1E1E1E',          // Black labels
+  },
+  dark: {
+    style: 'mapbox://styles/mapbox/dark-v11',
+    backgroundColor: '#1E1E1E',
+    waterColor: '#323232',
+    landColor: '#4B4B4B',
+    borderColor: '#787878',
+    labelColor: '#FFFFFF',
+  },
+};
+
+// Standard zoom levels for different analysis scales
+const ZOOM_LEVELS = {
+  global: 2,           // World view
+  continent: 4,        // Continental view
+  country: 6,          // National view
+  region: 8,           // State/province view
+  metro: 10,           // Metropolitan area
+  city: 12,            // City view
+  neighborhood: 15,    // District/neighborhood
+  street: 18,          // Street level
+};
+```
+
+---
+
+### Choropleth Maps (Regions with Color Scales)
+
+**Use Case:** Market size by region, sales by territory, performance by district
+
+```tsx
+import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
+import { Card } from './components/ui/card';
+import 'leaflet/dist/leaflet.css';
+
+// Kearney color scale for choropleth (sequential: low to high)
+const CHOROPLETH_SCALE = [
+  '#F5F5F5',  // 0-12.5% - Very low (lightest gray)
+  '#E6E6E6',  // 12.5-25% - Low
+  '#D2D2D2',  // 25-37.5% - Medium-low
+  '#E0D2FA',  // 37.5-50% - Medium (light purple)
+  '#C8A5F0',  // 50-62.5% - Medium-high
+  '#AF7DEB',  // 62.5-75% - High
+  '#9150E1',  // 75-87.5% - Very high
+  '#7823DC',  // 87.5-100% - Highest (Kearney purple)
+];
+
+// Function to assign color based on value
+function getColor(value: number, min: number, max: number): string {
+  const normalized = (value - min) / (max - min);
+  const index = Math.floor(normalized * (CHOROPLETH_SCALE.length - 1));
+  return CHOROPLETH_SCALE[Math.max(0, Math.min(index, CHOROPLETH_SCALE.length - 1))];
+}
+
+// GeoJSON styling function
+function style(feature: any, minValue: number, maxValue: number) {
+  const value = feature.properties.revenue;
+  return {
+    fillColor: getColor(value, minValue, maxValue),
+    weight: 1,
+    opacity: 1,
+    color: '#787878',         // Border color - gray
+    fillOpacity: 0.85,
+  };
+}
+
+export function ChoroplethMap({ data, geoJson }: Props) {
+  const values = data.map(d => d.revenue);
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="mb-1">Revenue by Territory</h3>
+          <p className="text-sm text-muted-foreground">
+            Q4 2024 Performance ($M)
+          </p>
+        </div>
+      </div>
+      
+      <div className="relative" style={{ height: '500px' }}>
+        <MapContainer
+          center={[39.8283, -98.5795]}  // US center
+          zoom={4}
+          style={{ height: '100%', width: '100%', borderRadius: '8px' }}
+          scrollWheelZoom={false}
+        >
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+            attribution='&copy; OpenStreetMap contributors, CARTO'
+          />
+          <GeoJSON 
+            data={geoJson} 
+            style={(feature) => style(feature, minValue, maxValue)} 
+          />
+        </MapContainer>
+
+        {/* Legend */}
+        <div className="absolute bottom-4 right-4 bg-background/95 backdrop-blur p-4 rounded-lg border shadow-lg">
+          <h4 className="text-sm font-semibold mb-2">Revenue ($M)</h4>
+          <div className="space-y-1">
+            {CHOROPLETH_SCALE.map((color, i) => {
+              const rangeValue = minValue + ((maxValue - minValue) * i / (CHOROPLETH_SCALE.length - 1));
+              return (
+                <div key={i} className="flex items-center gap-2">
+                  <div 
+                    className="w-8 h-4 rounded border"
+                    style={{ backgroundColor: color, borderColor: '#787878' }}
+                  />
+                  <span className="text-xs font-medium">
+                    ${rangeValue.toFixed(0)}M
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+```
+
+---
+
+### Point/Marker Maps (Locations)
+
+**Use Case:** Store locations, office locations, client sites, facility placement
+
+```tsx
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapPin, TrendingUp } from 'lucide-react';
+
+const locations = [
+  { lat: 40.7128, lng: -74.0060, name: 'New York', revenue: 250, type: 'primary' },
+  { lat: 34.0522, lng: -118.2437, name: 'Los Angeles', revenue: 180, type: 'secondary' },
+  { lat: 41.8781, lng: -87.6298, name: 'Chicago', revenue: 150, type: 'secondary' },
+  { lat: 29.7604, lng: -95.3698, name: 'Houston', revenue: 120, type: 'tertiary' },
+];
+
+// Size markers proportionally by value
+function getMarkerRadius(value: number, max: number): number {
+  const minRadius = 8;
+  const maxRadius = 30;
+  return minRadius + ((value / max) * (maxRadius - minRadius));
+}
+
+// Color by category
+function getMarkerColor(type: string): string {
+  const colors = {
+    primary: '#7823DC',      // Kearney purple - top tier
+    secondary: '#AF7DEB',    // Medium purple - mid tier
+    tertiary: '#E0D2FA',     // Light purple - lower tier
+    inactive: '#D2D2D2',     // Gray - inactive/closed
+  };
+  return colors[type] || colors.tertiary;
+}
+
+export function LocationMap() {
+  const maxRevenue = Math.max(...locations.map(l => l.revenue));
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="mb-1">Office Network</h3>
+          <p className="text-sm text-muted-foreground">
+            Revenue by location ($M)
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <MapPin className="w-4 h-4" style={{ color: '#7823DC' }} />
+          <span className="text-sm font-semibold">
+            {locations.length} Locations
+          </span>
+        </div>
+      </div>
+
+      <div style={{ height: '500px', borderRadius: '8px', overflow: 'hidden' }}>
+        <MapContainer
+          center={[39.8283, -98.5795]}
+          zoom={4}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; OpenStreetMap contributors'
+          />
+          
+          {locations.map((loc, i) => (
+            <CircleMarker
+              key={i}
+              center={[loc.lat, loc.lng]}
+              radius={getMarkerRadius(loc.revenue, maxRevenue)}
+              fillColor={getMarkerColor(loc.type)}
+              fillOpacity={0.7}
+              color="#FFFFFF"         // White border
+              weight={2}
+            >
+              <Popup>
+                <div className="p-2 min-w-[150px]">
+                  <h4 className="font-semibold mb-1">{loc.name}</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Revenue: ${loc.revenue}M
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" style={{ color: '#7823DC' }} />
+                    <span className="text-xs" style={{ color: '#7823DC' }}>
+                      +12% YoY
+                    </span>
+                  </div>
+                </div>
+              </Popup>
+            </CircleMarker>
+          ))}
+        </MapContainer>
+      </div>
+      
+      {/* Legend */}
+      <div className="mt-4 p-4 border rounded-lg">
+        <h4 className="text-sm font-semibold mb-3">Location Tiers</h4>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#7823DC' }} />
+            <span className="text-xs">Primary</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#AF7DEB' }} />
+            <span className="text-xs">Secondary</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#E0D2FA' }} />
+            <span className="text-xs">Tertiary</span>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          Circle size represents revenue volume
+        </p>
+      </div>
+    </Card>
+  );
+}
+```
+
+---
+
+### Map Color Scales Reference
+
+**Sequential Scale (Low to High):**
+```typescript
+// Use for single-variable visualizations (revenue, population, etc.)
+const SEQUENTIAL_SCALE = [
+  '#F5F5F5',  // 0-12.5% - Very low
+  '#E6E6E6',  // 12.5-25% - Low
+  '#D2D2D2',  // 25-37.5% - Medium-low
+  '#E0D2FA',  // 37.5-50% - Medium
+  '#C8A5F0',  // 50-62.5% - Medium-high
+  '#AF7DEB',  // 62.5-75% - High
+  '#9150E1',  // 75-87.5% - Very high
+  '#7823DC',  // 87.5-100% - Highest
+];
+```
+
+**Diverging Scale (Below/Above Target):**
+```typescript
+// Use for performance vs target visualizations
+const DIVERGING_SCALE = {
+  // Below target (red tones - use sparingly)
+  low: ['#FFCDD2', '#FF8A80', '#EF5350'],
+  // At target (neutral gray)
+  neutral: '#E6E6E6',
+  // Above target (purple tones - Kearney colors)
+  high: ['#E0D2FA', '#AF7DEB', '#7823DC'],
+};
+```
+
+**Categorical Colors:**
+```typescript
+// Use for different types/categories
+const CATEGORICAL_COLORS = {
+  primary: '#7823DC',      // Primary territories/locations
+  secondary: '#AF7DEB',    // Secondary territories
+  tertiary: '#E0D2FA',     // Tertiary territories
+  inactive: '#D2D2D2',     // Inactive/closed locations
+  competitor: '#EF5350',   // Competitor presence (use sparingly)
+  opportunity: '#9150E1',  // New opportunity areas
+};
+```
+
+---
+
+### Static Maps for Slides (react-simple-maps)
+
+**Use Case:** Presentation slides, static reports, printed materials
+
+```tsx
+import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
+
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
+const markers = [
+  { coordinates: [-74.006, 40.7128], name: "New York", value: 250 },
+  { coordinates: [-118.2437, 34.0522], name: "Los Angeles", value: 180 },
+  { coordinates: [-87.6298, 41.8781], name: "Chicago", value: 150 },
+];
+
+export function StaticWorldMap() {
+  return (
+    <div className="relative bg-card" style={{ aspectRatio: '16/9' }}>
+      <div className="h-full p-16">
+        <h2 className="mb-2">Global Office Network</h2>
+        <p className="text-sm text-muted-foreground mb-8">
+          Revenue by location ($M)
+        </p>
+        
+        <ComposableMap
+          projection="geoMercator"
+          projectionConfig={{ scale: 140, center: [-95, 40] }}
+          style={{ width: '100%', height: 'calc(100% - 200px)' }}
+        >
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill="#E6E6E6"           // Light gray land
+                  stroke="#FFFFFF"         // White borders
+                  strokeWidth={0.5}
+                  style={{
+                    default: { outline: 'none' },
+                    hover: { 
+                      fill: '#E0D2FA',     // Light purple on hover
+                      outline: 'none' 
+                    },
+                  }}
+                />
+              ))
+            }
+          </Geographies>
+          
+          {markers.map(({ coordinates, name, value }, i) => (
+            <Marker key={i} coordinates={coordinates}>
+              {/* Marker circle */}
+              <circle 
+                r={6 + (value / 50)} 
+                fill="#7823DC"
+                stroke="#FFFFFF"
+                strokeWidth={2}
+              />
+              {/* Label */}
+              <text
+                textAnchor="middle"
+                y={-15}
+                style={{ 
+                  fontFamily: 'Inter, Arial, sans-serif',
+                  fontSize: '12px',
+                  fill: '#1E1E1E',
+                  fontWeight: 600,
+                }}
+              >
+                {name}
+              </text>
+              {/* Value label */}
+              <text
+                textAnchor="middle"
+                y={-2}
+                style={{ 
+                  fontFamily: 'Inter, Arial, sans-serif',
+                  fontSize: '10px',
+                  fill: '#787878',
+                }}
+              >
+                ${value}M
+              </text>
+            </Marker>
+          ))}
+        </ComposableMap>
+      </div>
+      
+      {/* Slide footer */}
+      <div className="absolute bottom-0 left-0 right-0 px-16 py-6 border-t">
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>© Kearney 2026</span>
+          <span>8 / 12</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### Geospatial Analytics Best Practices
+
+**DO ✅:**
+- Use appropriate zoom level for the analysis scale
+- Include scale bar and north arrow when needed
+- Provide clear legend with units and color scale
+- Use Kearney color scales exclusively for all data overlays
+- Annotate key geographic insights with callouts
+- Keep base maps minimal (light gray or white background)
+- Label major cities/regions/territories
+- Add interactive tooltips with detailed data
+- Test choropleth scales for colorblind accessibility
+- Provide data table alternative for accessibility
+
+**DON'T ❌:**
+- Use rainbow or traffic light color scales
+- Overcrowd the map with labels
+- Use 3D effects unless specifically needed for terrain
+- Show unnecessary geographic detail (roads, buildings, water features)
+- Use non-Kearney colors for any data visualization
+- Forget to include a legend or scale
+- Use fonts smaller than 11px
+- Distort geographic projections without reason
+- Use pie charts on maps (use proportional circles instead)
+- Rely solely on color to convey critical information
+
+---
+
+### Common Consulting Map Use Cases
+
+```typescript
+const MAP_USE_CASES = {
+  'market-sizing': {
+    type: 'Choropleth map',
+    description: 'Revenue or market potential by region',
+    colors: 'Sequential scale (gray to purple)',
+  },
+  'store-locations': {
+    type: 'Point map with sized markers',
+    description: 'Locations with performance metrics',
+    colors: 'Categorical + size by value',
+  },
+  'territory-planning': {
+    type: 'Choropleth with boundaries',
+    description: 'Sales territories with targets',
+    colors: 'Diverging scale (below/above target)',
+  },
+  'customer-density': {
+    type: 'Heatmap',
+    description: 'Customer concentration analysis',
+    colors: 'Sequential scale with transparency',
+  },
+  'supply-chain': {
+    type: 'Flow map with routes',
+    description: 'Distribution network visualization',
+    colors: 'Line weight by volume, purple',
+  },
+  'site-selection': {
+    type: 'Multi-criteria point map',
+    description: 'Locations scored on multiple factors',
+    colors: 'Categorical with size indicators',
+  },
+  'competitive-landscape': {
+    type: 'Multi-category choropleth',
+    description: 'Market share by region',
+    colors: 'Categorical (primary/competitor)',
+  },
+  'demographic-analysis': {
+    type: 'Choropleth with census data',
+    description: 'Population characteristics by area',
+    colors: 'Sequential scale',
+  },
+};
+```
+
+---
+
+### Map Typography Standards
+
+```typescript
+const MAP_TYPOGRAPHY = {
+  title: {
+    fontSize: '18px',
+    fontWeight: 600,
+    fontFamily: 'Inter, Arial, sans-serif',
+    color: '#1E1E1E',
+  },
+  subtitle: {
+    fontSize: '14px',
+    fontWeight: 400,
+    fontFamily: 'Inter, Arial, sans-serif',
+    color: '#787878',
+  },
+  cityLabel: {
+    fontSize: '12px',
+    fontWeight: 600,
+    fontFamily: 'Inter, Arial, sans-serif',
+    color: '#1E1E1E',
+  },
+  valueLabel: {
+    fontSize: '11px',
+    fontWeight: 400,
+    fontFamily: 'Inter, Arial, sans-serif',
+    color: '#787878',
+  },
+  legendTitle: {
+    fontSize: '12px',
+    fontWeight: 600,
+    fontFamily: 'Inter, Arial, sans-serif',
+    color: '#1E1E1E',
+  },
+  legendLabels: {
+    fontSize: '11px',
+    fontWeight: 400,
+    fontFamily: 'Inter, Arial, sans-serif',
+    color: '#787878',
+  },
+};
+```
+
+**CRITICAL:** Never use fonts smaller than 11px on maps - they become illegible when printed or viewed on slides.
+
+---
+
+### Geospatial Data Formats
+
+**Common formats for consulting work:**
+
+1. **GeoJSON (most common, easiest to use):**
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-74, 40], [-73, 40], [-73, 41], [-74, 41], [-74, 40]]]
+      },
+      "properties": {
+        "name": "Territory Northeast",
+        "revenue": 2400000,
+        "growth": 0.125,
+        "category": "primary"
+      }
+    }
+  ]
+}
+```
+
+2. **CSV with coordinates:**
+```csv
+name,lat,lng,revenue,growth
+"New York",40.7128,-74.0060,250,0.15
+"Los Angeles",34.0522,-118.2437,180,0.08
+"Chicago",41.8781,-87.6298,150,0.12
+```
+
+3. **Shapefile (.shp) conversion:**
+- Use https://mapshaper.org/ to convert Shapefiles to GeoJSON
+- Or use command line: `ogr2ogr -f GeoJSON output.json input.shp`
+
+---
+
+### Map Accessibility Checklist
+
+Before delivering any map visualization:
+
+- [ ] **Color Contrast**: All labels have ≥ 4.5:1 contrast ratio
+- [ ] **Colorblind Safe**: Test with colorblind simulator (use coolors.co or similar)
+- [ ] **Text Alternative**: Provide data table showing all map data
+- [ ] **Keyboard Navigation**: Interactive maps have keyboard controls
+- [ ] **Screen Reader Labels**: Add ARIA labels to map containers
+- [ ] **Legend Clarity**: Color legend is clear without relying solely on hue
+- [ ] **Font Size**: All text ≥ 11px
+- [ ] **Touch Targets**: Interactive elements ≥ 44x44px on mobile
+- [ ] **Zoom Controls**: Visible zoom in/out buttons
+- [ ] **Scale Indicator**: Include scale bar for distance reference
+
+```tsx
+// Accessibility example
+<div 
+  role="img" 
+  aria-label="Map showing revenue by territory. New York leads with $250M, followed by Los Angeles at $180M and Chicago at $150M."
+  style={{ height: '500px' }}
+>
+  <MapContainer>
+    {/* Map content */}
+  </MapContainer>
+</div>
+
+{/* Provide accessible data table */}
+<details className="mt-4">
+  <summary className="text-sm font-semibold cursor-pointer hover:text-primary">
+    View data table (accessible alternative)
+  </summary>
+  <table className="mt-2 w-full text-sm border">
+    <thead>
+      <tr className="bg-muted">
+        <th className="text-left p-2">Territory</th>
+        <th className="text-right p-2">Revenue</th>
+        <th className="text-right p-2">Growth</th>
+      </tr>
+    </thead>
+    <tbody>
+      {data.map((item, i) => (
+        <tr key={i} className="border-t">
+          <td className="p-2">{item.name}</td>
+          <td className="text-right p-2">${item.revenue}M</td>
+          <td className="text-right p-2">{item.growth}%</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</details>
+```
+
+---
+
+### Package Dependencies for Maps
+
+```json
+{
+  "dependencies": {
+    "react-leaflet": "^4.x",
+    "leaflet": "^1.9.x",
+    "mapbox-gl": "^3.x",
+    "react-map-gl": "^7.x",
+    "react-simple-maps": "^3.x",
+    "@deck.gl/react": "^8.x",
+    "deck.gl": "^8.x"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.x"
+  }
+}
+```
+
+**Installation order:**
+```bash
+# Start with Leaflet (most common)
+npm install react-leaflet leaflet
+npm install @types/leaflet --save-dev
+
+# Add Mapbox if needed
+npm install mapbox-gl react-map-gl
+
+# Add Simple Maps for slides
+npm install react-simple-maps
+```
+
+---
+
 ## Common Mistakes & Anti-Patterns
 
 ### ❌ WRONG: Gridlines on Chart
@@ -1472,6 +2189,17 @@ Common icons that exist:
 ---
 
 ## Version History
+
+### Version 1.1 (January 2, 2026)
+- **NEW: Comprehensive Mapping & Geospatial Analytics section**
+- Added choropleth map color scales and examples
+- Added point/marker map standards
+- Added static map guidelines for slides
+- Included map library recommendations (Leaflet, Mapbox, react-simple-maps)
+- Added geospatial data format guidance
+- Added map accessibility standards
+- Created MapExample.tsx component with best practices
+- Updated Quick Start guide to include mapping rules
 
 ### Version 1.0 (January 1, 2026)
 - Initial release with complete design system
