@@ -85,11 +85,11 @@ export function DashboardExample() {
                 <h2 className="mb-1">{kpi.value}</h2>
                 <div className="flex items-center gap-1">
                   {kpi.trend === 'up' ? (
-                    <TrendingUp className="w-4 h-4 text-green-600" />
+                    <TrendingUp className="w-4 h-4" style={{ color: '#7823DC' }} />
                   ) : (
-                    <TrendingDown className="w-4 h-4 text-red-600" />
+                    <TrendingDown className="w-4 h-4" style={{ color: '#787878' }} />
                   )}
-                  <span className={`text-sm ${kpi.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className="text-sm" style={{ color: kpi.trend === 'up' ? '#7823DC' : '#787878' }}>
                     {kpi.change}
                   </span>
                 </div>
@@ -308,13 +308,13 @@ export function DashboardExample() {
                   </td>
                   <td className="py-4 px-4">
                     <Badge 
-                      className={
-                        project.status === 'On Track' 
-                          ? 'bg-green-600' 
+                      style={{
+                        backgroundColor: project.status === 'On Track' 
+                          ? '#7823DC' 
                           : project.status === 'At Risk'
-                          ? 'bg-yellow-600'
-                          : 'bg-red-600'
-                      }
+                          ? '#787878'
+                          : '#4B4B4B'
+                      }}
                     >
                       {project.status}
                     </Badge>
@@ -346,13 +346,13 @@ export function DashboardExample() {
           </Button>
         </Card>
 
-        <Card className="p-6 border-yellow-600/30 bg-yellow-600/5">
-          <h5 className="mb-2 text-yellow-600">Action Required</h5>
+        <Card className="p-6" style={{ borderColor: '#78787830', backgroundColor: '#78787805' }}>
+          <h5 className="mb-2" style={{ color: '#787878' }}>Action Required</h5>
           <p className="text-sm text-muted-foreground mb-4">
             3 projects are showing risk indicators. Review resource allocation 
             and consider timeline adjustments for Q2 deliverables.
           </p>
-          <Button variant="ghost" size="sm" className="text-yellow-600 p-0 h-auto hover:bg-transparent">
+          <Button variant="ghost" size="sm" className="p-0 h-auto hover:bg-transparent" style={{ color: '#787878' }}>
             Review projects
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>

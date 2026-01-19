@@ -147,8 +147,8 @@ export function AnnotatedChartsExample() {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-          <div className="flex items-start gap-2 mt-4 p-3 bg-yellow-600/5 rounded-lg border border-yellow-600/20">
-            <AlertCircle className="w-4 h-4 mt-0.5 text-yellow-600" />
+          <div className="flex items-start gap-2 mt-4 p-3 rounded-lg border" style={{ backgroundColor: `${colors.chart2}10`, borderColor: `${colors.chart2}30` }}>
+            <AlertCircle className="w-4 h-4 mt-0.5" style={{ color: colors.chart2 }} />
             <p className="text-sm">
               <span className="font-semibold">Operations below target</span> - resource allocation needed
             </p>
@@ -232,20 +232,20 @@ export function AnnotatedChartsExample() {
         
         {/* Insights grid */}
         <div className="grid md:grid-cols-3 gap-4 mt-6">
-          <div className="p-4 bg-green-600/5 rounded-lg border border-green-600/20">
+          <div className="p-4 rounded-lg border" style={{ backgroundColor: `${colors.chart10}10`, borderColor: `${colors.chart10}30` }}>
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <h6 className="text-green-600">Peak Performance</h6>
+              <TrendingUp className="w-4 h-4" style={{ color: colors.chart10 }} />
+              <h6 style={{ color: colors.chart10 }}>Peak Performance</h6>
             </div>
             <p className="text-sm text-muted-foreground">
               May saw <span className="font-semibold text-foreground">+25% growth</span>, highest of the period
             </p>
           </div>
           
-          <div className="p-4 bg-red-600/5 rounded-lg border border-red-600/20">
+          <div className="p-4 rounded-lg border" style={{ backgroundColor: `${colors.chart2}10`, borderColor: `${colors.chart2}30` }}>
             <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="w-4 h-4 text-red-600" />
-              <h6 className="text-red-600">Dip in April</h6>
+              <TrendingDown className="w-4 h-4" style={{ color: colors.chart2 }} />
+              <h6 style={{ color: colors.chart2 }}>Dip in April</h6>
             </div>
             <p className="text-sm text-muted-foreground">
               April revenue declined <span className="font-semibold text-foreground">13%</span> due to seasonal factors
@@ -288,7 +288,7 @@ export function AnnotatedChartsExample() {
                 <span>For final values in trend charts</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-600 mt-0.5">✗</span>
+                <span style={{ color: colors.chart2 }} className="mt-0.5">✗</span>
                 <span>When labels would overlap or clutter the chart</span>
               </li>
             </ul>
@@ -305,15 +305,15 @@ export function AnnotatedChartsExample() {
                 <span>Add insight cards below charts to explain key findings</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-primary mt-0.5">✓</span>
+                <span style={{ color: colors.chart10 }} className="mt-0.5">✓</span>
                 <span>Use Kearney-colored icons in insights (Lucide icons)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-primary mt-0.5">✓</span>
+                <span style={{ color: colors.chart10 }} className="mt-0.5">✓</span>
                 <span>Keep annotations concise and action-oriented</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-600 mt-0.5">✗</span>
+                <span style={{ color: colors.chart2 }} className="mt-0.5">✗</span>
                 <span>Never use emoticons - only professional icons</span>
               </li>
             </ul>
