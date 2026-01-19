@@ -16,6 +16,7 @@ import { DashboardExample } from "./components/kearney/DashboardExample";
 import { SlideExample } from "./components/kearney/SlideExample";
 import { DataVisualizationGuide } from "./components/kearney/DataVisualizationGuide";
 import { GradientsShowcase } from "./components/kearney/GradientsShowcase";
+import { ThemeComparisonShowcase } from "./components/kearney/ThemeComparisonShowcase";
 import { Logo } from "./components/kearney/Logo";
 import { MapExample } from "./components/kearney/MapExample";
 
@@ -126,6 +127,7 @@ function AppContent({
           <TabsList className="mb-8 flex flex-wrap h-auto gap-2 bg-muted p-1 rounded-lg">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="colors">Colors</TabsTrigger>
+            <TabsTrigger value="themes">Themes</TabsTrigger>
             <TabsTrigger value="gradients">
               Gradients
             </TabsTrigger>
@@ -152,6 +154,10 @@ function AppContent({
 
           <TabsContent value="colors">
             <ColorPalette />
+          </TabsContent>
+
+          <TabsContent value="themes">
+            <ThemeComparisonShowcase />
           </TabsContent>
 
           <TabsContent value="gradients">

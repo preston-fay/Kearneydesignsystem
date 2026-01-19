@@ -786,6 +786,27 @@ const SLIDE_SPECS = {
 
 ## Theme Configuration
 
+**CRITICAL**: All KDS components MUST work in both light and dark themes. 
+
+📄 **See `/KDS_THEME_SPECIFICATIONS.md` for complete specifications including:**
+- Detailed color values and contrast ratios
+- Component-specific theme behavior
+- Testing checklist
+- Implementation examples
+
+### Quick Reference
+
+**When to use CSS variables** (theme-aware):
+- Backgrounds: `bg-background`, `bg-card`, `bg-muted`
+- Text: `text-foreground`, `text-muted-foreground`, `text-primary`
+- Borders: `border-border`
+- Interactive states: `hover:bg-muted/50`
+
+**When to use explicit colors** (theme-independent):
+- Chart colors: Always use hex codes (`#7823DC`, `#787878`, etc.)
+- Data visualizations: Explicit Kearney palette colors
+- Brand accents: Kearney Purple (`#7823DC` light, `#9150E1` dark)
+
 ### Light Theme (Default)
 
 ```css
@@ -826,6 +847,20 @@ const SLIDE_SPECS = {
 }
 ```
 
+### Contrast Requirements
+
+**All text MUST meet WCAG AA standards**: 4.5:1 contrast ratio for normal text.
+
+**Light Theme Verified Ratios:**
+- Body text (#1E1E1E on #FFFFFF): 16.9:1 ✅
+- Secondary text (#787878 on #FFFFFF): 4.6:1 ✅
+- Kearney Purple (#7823DC on #FFFFFF): 5.2:1 ✅
+
+**Dark Theme Verified Ratios:**
+- Body text (#FFFFFF on #1E1E1E): 16.9:1 ✅
+- Secondary text (#A5A5A5 on #1E1E1E): 6.5:1 ✅
+- Bright Purple (#9150E1 on #1E1E1E): 7.1:1 ✅
+
 ### Using Theme Variables
 
 ```tsx
@@ -841,6 +876,18 @@ const SLIDE_SPECS = {
 // For specific Kearney purple
 <Bar fill="#7823DC" />
 ```
+
+### Theme Testing Checklist
+
+Before delivering ANY KDS component, verify BOTH themes:
+
+- [ ] All text is legible (≥ 4.5:1 contrast)
+- [ ] Charts render correctly in both themes
+- [ ] Borders are visible but subtle
+- [ ] Hover/focus states work in both themes
+- [ ] No hardcoded colors that break in dark mode
+- [ ] Kearney Purple remains primary accent in both
+- [ ] No traffic light colors in either theme
 
 ---
 

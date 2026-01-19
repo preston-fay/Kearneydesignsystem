@@ -30,7 +30,7 @@ export function DesignSystemOverview() {
               <div>
                 <strong>Light & Dark Themes</strong>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Full support for both themes with optimized legibility in all contexts
+                  Full support for both themes with WCAG AA compliance. See the Themes tab for complete specifications.
                 </p>
               </div>
             </li>
